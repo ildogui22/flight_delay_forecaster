@@ -1,0 +1,25 @@
+# ── Secrets ───────────────────────────────────────────
+.env
+
+# ── Python ────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# ── Virtual environments ───────────────────────────────
+.venv/
+venv/
+ml_pipeline_venv/
+
+# ── Editors / OS ──────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+
+
+credentials.json
+sample_*.json
