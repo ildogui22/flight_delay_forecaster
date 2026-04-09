@@ -1,0 +1,15 @@
+airportsdata==20260315
+boto3==1.42.85
+botocore==1.42.85
+certifi==2026.2.25
+charset-normalizer==3.4.7
+dotenv==0.9.9
+idna==3.11
+jmespath==1.1.0
+opensky-api @ git+https://github.com/openskynetwork/opensky-api.git@5bcc39a8f6d485ff7113fa4aa6d6608ea7e9da02#subdirectory=python
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
+requests==2.33.1
+s3transfer==0.16.0
+six==1.17.0
+urllib3==2.6.3

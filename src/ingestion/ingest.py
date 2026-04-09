@@ -14,12 +14,12 @@ RAW_BUCKET = os.getenv("S3_BUCKET_RAW", "ml-pipeline-raw")
 
 def build_s3_key(airport: str, date: str) -> str:
     dt = datetime.strptime(date, "%Y-%m-%d")
-    return f"flights/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/{airport}.json"
+    return f"year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/{airport}.json"
 
 def ingest_flights(airport: str, start_date: str, end_date: str) -> int:
     ensure_bucket(RAW_BUCKET)
     data = fetch_departures(airport, start_date, end_date)
-    key = build_s3_key(airport, start_date)
+    key = os.path.join("flights", build_s3_key(airport, start_date))
     upload_json(data, RAW_BUCKET, key)
     return len(data)
 
@@ -30,18 +30,21 @@ def ingest_weather(airport: str, date: str) -> None:
         return None
     lat, lon = coords
     data = fetch_weather(lat, lon, start_date=date, end_date=date)
-    dt = datetime.strptime(date, "%Y-%m-%d")
-    key = f"weather/year={dt.year}/month={dt.month}/day={dt.day}/{airport}.json"
+    key = os.path.join("weather", build_s3_key(airport, date))
     ensure_bucket(RAW_BUCKET)
     upload_json(data, RAW_BUCKET, key)
 
 if __name__ == "__main__":
-    count = ingest_flights("EDDF", "2024-01-01", "2024-01-02")
-    print(f"Uploaded {count} flights")
+    START_DATE = "2024-01-15"
+    END_DATE = "2024-01-16"
+    AIRPORTS = ["EDDF", "EGLL"]
 
-
-    for airport in ["EDDF", "EGLL"]:
-        ingest_weather(airport, "2024-01-01")
+    for airport in AIRPORTS:
+        count = ingest_flights(airport, START_DATE, END_DATE)
+        ingest_weather(airport, START_DATE)
+        print(f"Uploaded {count} flights for {AIRPORTS}")
         print(f"Uploaded weather for {airport}")
+
+
 
 

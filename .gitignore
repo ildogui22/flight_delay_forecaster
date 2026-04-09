@@ -13,7 +13,7 @@ build/
 # ── Virtual environments ───────────────────────────────
 .venv/
 venv/
-ml_pipeline_venv/
+.ml_pipeline_venv/
 
 # ── Editors / OS ──────────────────────────────────────
 .vscode/
@@ -23,3 +23,6 @@ ml_pipeline_venv/
 
 credentials.json
 sample_*.json
+
+
+etl/raw_to_silver_spark.py
