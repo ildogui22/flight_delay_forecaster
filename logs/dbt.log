@@ -1,0 +1,86 @@
+[0m13:36:41.367285 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109e37a90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cd7b590>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cdb5d50>]}
+
+
+============================== 13:36:41.369436 | 1b91e105-9f6c-4bff-a194-b734b8b7053d ==============================
+[0m13:36:41.369436 [info ] [MainThread]: Running with dbt=1.8.0
+[0m13:36:41.369701 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/Users/guidogiudici/.dbt', 'version_check': 'True', 'warn_error': 'None', 'log_path': 'logs', 'fail_fast': 'False', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt init dbt', 'static_parser': 'True', 'introspect': 'True', 'target_path': 'None', 'log_format': 'default', 'send_anonymous_usage_stats': 'True'}
+[0m13:36:41.375805 [warn ] [MainThread]: [ConfigFolderDirectory]: Unable to parse logging event dictionary. Failed to parse dir field: expected string or bytes-like object, got 'PosixPath'.. Dictionary: {'dir': PosixPath('/Users/guidogiudici/.dbt')}
+[0m13:36:41.376045 [info ] [MainThread]: Creating dbt configuration folder at 
+[0m13:36:53.049162 [debug] [MainThread]: Starter project path: /Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/include/starter_project
+[0m13:36:53.059008 [info ] [MainThread]: 
+Your new dbt project "ml_pipeline" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m13:36:53.059492 [info ] [MainThread]: Setting up your profile.
+[0m13:37:24.961243 [error] [MainThread]: Encountered an error:
+
+[0m13:37:24.966385 [error] [MainThread]: Traceback (most recent call last):
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/cli/requires.py", line 138, in wrapper
+    result, success = func(*args, **kwargs)
+                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/cli/requires.py", line 101, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/cli/main.py", line 469, in init
+    results = task.run()
+              ^^^^^^^^^^
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/task/init.py", line 347, in run
+    self.setup_profile(profile_name)
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/task/init.py", line 262, in setup_profile
+    adapter = self.ask_for_adapter_choice()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/task/init.py", line 243, in ask_for_adapter_choice
+    numeric_choice = click.prompt(prompt_msg, type=click.INT)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/click/termui.py", line 164, in prompt
+    value = prompt_func(prompt)
+            ^^^^^^^^^^^^^^^^^^^
+  File "/Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/click/termui.py", line 147, in prompt_func
+    raise Abort() from None
+click.exceptions.Abort
+
+[0m13:37:24.977406 [debug] [MainThread]: Resource report: {"command_name": "init", "command_wall_clock_time": 43.64321, "process_user_time": 0.540896, "process_kernel_time": 0.125156, "process_mem_max_rss": "102531072", "command_success": false, "process_in_blocks": "0", "process_out_blocks": "0"}
+[0m13:37:24.978263 [debug] [MainThread]: Command `dbt init` failed at 13:37:24.978123 after 43.64 seconds
+[0m13:37:24.978759 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1044779d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10ce4bdd0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cdb5590>]}
+[0m13:37:24.979170 [debug] [MainThread]: Flushing usage events
+[0m13:37:28.814498 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109ab8990>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109aded90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b09450>]}
+
+
+============================== 13:37:28.816581 | 20f2e1c8-5bcf-4a16-864d-2797e73b012b ==============================
+[0m13:37:28.816581 [info ] [MainThread]: Running with dbt=1.8.0
+[0m13:37:28.816847 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/Users/guidogiudici/.dbt', 'debug': 'False', 'warn_error': 'None', 'log_path': 'logs', 'fail_fast': 'False', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'log_format': 'default', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'target_path': 'None', 'invocation_command': 'dbt init dbt', 'send_anonymous_usage_stats': 'True'}
+[0m13:37:37.104001 [debug] [MainThread]: Starter project path: /Users/guidogiudici/.pyenv/versions/3.11.4/lib/python3.11/site-packages/dbt/include/starter_project
+[0m13:37:37.117547 [info ] [MainThread]: 
+Your new dbt project "ml_pipeline" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m13:37:37.118224 [info ] [MainThread]: Setting up your profile.
+[0m13:39:40.367537 [info ] [MainThread]: Profile ml_pipeline written to /Users/guidogiudici/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+[0m13:39:40.374507 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 131.58832, "process_user_time": 0.51749, "process_kernel_time": 0.11876, "process_mem_max_rss": "102301696", "process_in_blocks": "0", "process_out_blocks": "0"}
+[0m13:39:40.375602 [debug] [MainThread]: Command `dbt init` succeeded at 13:39:40.375417 after 131.59 seconds
+[0m13:39:40.376320 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107d4be10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10116b9d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109604ad0>]}
+[0m13:39:40.376901 [debug] [MainThread]: Flushing usage events

@@ -1,4 +1,4 @@
-.PHONY: localstack postgres ingest verify etl silver-to-postgres
+.PHONY: localstack postgres ingest verify etl silver-to-postgres dbt-run dbt-test dbt-debug
 
 localstack:
 	docker run --rm -d -p 4566:9000 -p 4567:9001 \
@@ -27,3 +27,12 @@ silver-to-postgres:
 verify:
 	AWS_ACCESS_KEY_ID=minioadmin AWS_SECRET_ACCESS_KEY=minioadmin \
 	aws --endpoint-url=http://localhost:9000 s3 ls s3://ml-pipeline-raw/ --recursive
+
+dbt-run:
+	cd dbt && dbt run --profiles-dir .
+
+dbt-test:
+	cd dbt && dbt test --profiles-dir .
+
+dbt-debug:
+	cd dbt && dbt debug --profiles-dir .
