@@ -42,7 +42,7 @@ if __name__ == "__main__":
     for airport in AIRPORTS:
         count = ingest_flights(airport, START_DATE, END_DATE)
         ingest_weather(airport, START_DATE)
-        print(f"Uploaded {count} flights for {AIRPORTS}")
+        print(f"Uploaded {count} flights for {airport}")
         print(f"Uploaded weather for {airport}")
 
 

@@ -1,11 +1,19 @@
-.PHONY: localstack ingest verify etl
+.PHONY: localstack postgres ingest verify etl silver-to-postgres
 
 localstack:
-	docker run --rm -p 4566:9000 -p 4567:9001 \
+	docker run --rm -d -p 4566:9000 -p 4567:9001 \
 	  -e MINIO_ROOT_USER=minioadmin \
 	  -e MINIO_ROOT_PASSWORD=minioadmin \
 	  minio/minio server /data --console-address ":9001"
 
+postgres:
+	docker run --rm -d \
+	  --name ml-postgres \
+	  -e POSTGRES_USER=mlpipeline \
+	  -e POSTGRES_PASSWORD=mlpipeline \
+	  -e POSTGRES_DB=mlpipeline \
+	  -p 5432:5432 \
+	  postgres:15
 
 ingest:
 	cd src && python -m ingestion.ingest
@@ -13,6 +21,8 @@ ingest:
 etl:
 	cd src && python -m etl.process
 
+silver-to-postgres:
+	cd src && python -m etl.silver_to_postgres
 
 verify:
 	AWS_ACCESS_KEY_ID=minioadmin AWS_SECRET_ACCESS_KEY=minioadmin \
