@@ -1,5 +1,6 @@
 import requests
 import airportsdata
+import os
 
 BASE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
@@ -7,11 +8,21 @@ DEFAULT_VARIABLES = [
     "temperature_2m",
     "relative_humidity_2m",
     "wind_speed_10m",
+    "wind_gusts_10m",
+    "wind_direction_10m",
     "precipitation",
+    "snowfall",
+    "snow_depth",
+    "cloud_cover",
+    "surface_pressure",
     "weather_code",
 ]
 
+
 def get_airport_coords(icao: str) -> tuple[float, float] | None:
+    """
+    Get airport coordinates using icao codes from airportsdata library
+    """
     airports = airportsdata.load("ICAO")
     airport = airports.get(icao)
     if airport is None:
@@ -19,13 +30,21 @@ def get_airport_coords(icao: str) -> tuple[float, float] | None:
     return (airport["lat"], airport["lon"])
 
 def fetch_weather(
-        latitude: float,
-        longitude: float,
+        airport: str,
         start_date: str,
         end_date: str,
         variables: list = DEFAULT_VARIABLES
 ) -> dict:
-    
+    """
+    Fetching weather conditions (specified variables) from OpenMeteo API
+    """
+
+    coords = get_airport_coords(airport)
+    if coords is None:
+        print(f"No coordinates found for airport: {airport}, skipping")
+        return {}
+    latitude, longitude = coords
+
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -41,17 +60,20 @@ def fetch_weather(
     return response.json()
 
 
+# Testing the response of the weather API
 if __name__ == "__main__":
     import json
 
     data = fetch_weather(
-        latitude=48.85,
-        longitude=2.35,
+        airport="EDDF",
         start_date="2024-01-01",
         end_date="2024-01-03",
     )
 
-    with open("sample_response.json", "w") as f:
+    out_path = os.path.join(os.path.dirname(__file__), "sample_weather.json")
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    with open(out_path, "w") as f:
         json.dump(data, f, indent=2)
 
-    print("Saved to sample_response.json")
+    print(f"Saved to {out_path}")

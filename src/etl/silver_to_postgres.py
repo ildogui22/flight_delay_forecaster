@@ -28,6 +28,11 @@ def ensure_schema(engine, schema: str) -> None:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
         conn.commit()
 
+def drop_table_cascade(engine, schema: str, table: str):
+    with engine.connect() as conn:
+        conn.execute(text(f"DROP TABLE IF EXISTS {schema}.{table} CASCADE"))
+        conn.commit()
+
 def load_flights(engine) -> None:
     s3 = get_client()
     response = s3.list_objects_v2(Bucket=BUCKET_SILVER, Prefix="flights/")
@@ -40,6 +45,7 @@ def load_flights(engine) -> None:
         frames.append(pd.read_parquet(io.BytesIO(body)))
     
     df = pd.concat(frames, ignore_index=True)
+    drop_table_cascade(engine, "raw", "flights")
     df.to_sql("flights", engine, schema="raw", if_exists="replace", index=False)
     print(f"Loaded {len(df)} flights rows into raw.flights")
 
@@ -56,6 +62,7 @@ def load_weather(engine) -> None:
         frames.append(pd.read_parquet(io.BytesIO(body)))
 
     df = pd.concat(frames, ignore_index=True)
+    drop_table_cascade(engine, "raw", "weather")
     df.to_sql("weather", engine, schema="raw", if_exists="replace", index=False)
     print(f"Loaded {len(df)} weather rows into raw.weather")
 

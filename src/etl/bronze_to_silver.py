@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from utils.s3 import get_client
+import json
 
 load_dotenv()
 
@@ -47,12 +48,14 @@ def list_weather_files(s3) -> list[tuple[str, str]]:
 #     for airport, date in list_weather_files(s3):
 #         process_weather(spark, airport, date)
 #     spark.stop()
-
 # else:
-from etl.raw_to_silver import process_flights, process_weather
 
-s3 = get_client()
-for date in list_flight_dates(s3):
-    process_flights(date)
-for airport, date in list_weather_files(s3):
-    process_weather(airport, date)
+
+if __name__ == "__main__":
+    from etl.bronze_util import process_flights, process_weather
+
+    s3 = get_client()
+    for date in list_flight_dates(s3):
+        process_flights(date)
+    for airport, date in list_weather_files(s3):
+        process_weather(airport, date)

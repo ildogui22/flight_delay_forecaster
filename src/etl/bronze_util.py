@@ -1,3 +1,8 @@
+"""
+ETL step 1: reads raw JSON files from S3 bronze storage, cleans and transforms
+the data using pandas, and writes Parquet files to S3 silver storage.
+"""
+
 import io
 import json
 import os
@@ -13,12 +18,10 @@ BUCKET_SILVER = os.getenv("S3_BUCKET_SILVER", "ml-pipeline-silver")
 
 from utils.s3 import get_client, ensure_bucket
 
-
 def process_flights(date: str) -> None:
-    # year, month, day = date.split("-")
+    
     dt = datetime.strptime(date, "%Y-%m-%d")
     prefix = f"flights/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/"
-
 
     ensure_bucket(BUCKET_SILVER)
     s3 = get_client()

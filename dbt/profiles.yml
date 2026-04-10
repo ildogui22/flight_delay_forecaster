@@ -8,5 +8,5 @@ ml_pipeline:
       dbname: "{{ env_var('POSTGRES_DB', 'mlpipeline') }}"
       user: "{{ env_var('POSTGRES_USER', 'mlpipeline') }}"
       password: "{{ env_var('POSTGRES_PASSWORD', 'mlpipeline') }}"
-      schema: staging
+      schema: public
       threads: 4

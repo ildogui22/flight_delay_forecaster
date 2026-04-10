@@ -1,4 +1,4 @@
-.PHONY: localstack postgres ingest verify etl silver-to-postgres dbt-run dbt-test dbt-debug
+.PHONY: localstack postgres ingest verify bronze-to-silver silver-to-postgres dbt-run dbt-test dbt-debug
 
 localstack:
 	docker run --rm -d -p 4566:9000 -p 4567:9001 \
@@ -18,8 +18,8 @@ postgres:
 ingest:
 	cd src && python -m ingestion.ingest
 
-etl:
-	cd src && python -m etl.process
+bronze-to-silver:
+	cd src && python -m etl.bronze_to_silver
 
 silver-to-postgres:
 	cd src && python -m etl.silver_to_postgres

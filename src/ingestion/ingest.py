@@ -1,3 +1,8 @@
+"""
+Orchestrates data ingestion: fetches flight departures and weather data
+from external APIs and uploads raw JSON to S3 bronze storage.
+"""
+
 import os
 from datetime import datetime
 
@@ -6,7 +11,7 @@ from dotenv import load_dotenv
 from ingestion.flights_api import fetch_departures
 from utils.s3 import ensure_bucket, upload_json
 
-from ingestion.weather_api import fetch_weather, get_airport_coords
+from ingestion.weather_api import fetch_weather
 
 load_dotenv()
 
@@ -24,12 +29,10 @@ def ingest_flights(airport: str, start_date: str, end_date: str) -> int:
     return len(data)
 
 def ingest_weather(airport: str, date: str) -> None:
-    coords = get_airport_coords(airport)
-    if coords is None:
-        print(f"No coordinates for {airport}, skipping")
-        return None
-    lat, lon = coords
-    data = fetch_weather(lat, lon, start_date=date, end_date=date)
+
+    data = fetch_weather(airport, start_date=date, end_date=date)
+    if not data:
+        return
     key = os.path.join("weather", build_s3_key(airport, date))
     ensure_bucket(RAW_BUCKET)
     upload_json(data, RAW_BUCKET, key)
