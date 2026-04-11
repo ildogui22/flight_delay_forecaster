@@ -101,6 +101,7 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./src:/opt/airflow/src
       - airflow-logs:/opt/airflow/logs
+      - ./dbt:/opt/airflow/dbt
     depends_on:
       - postgres-airflow
     networks:
