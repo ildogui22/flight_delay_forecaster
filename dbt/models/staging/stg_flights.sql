@@ -17,6 +17,8 @@ renamed as (
     where icao24 is not null
     and "firstSeen_ts" is not null
     and duration_minutes > 0
+    and "estArrivalAirport" in ('EDDF', 'EGLL', 'LFPG', 'EHAM')
+    and "estDepartureAirport" != "estArrivalAirport"
 )
 
 select * from renamed

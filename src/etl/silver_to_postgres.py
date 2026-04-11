@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import IntegrityError
 
 from utils.s3 import get_client
 
@@ -23,15 +24,19 @@ def get_engine():
     url = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     return create_engine(url)
 
+
 def ensure_schema(engine, schema: str) -> None:
-    with engine.connect() as conn:
-        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
-        conn.commit()
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
+    except IntegrityError:
+        pass
+
 
 def drop_table_cascade(engine, schema: str, table: str):
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         conn.execute(text(f"DROP TABLE IF EXISTS {schema}.{table} CASCADE"))
-        conn.commit()
+
 
 def load_flights(engine) -> None:
     s3 = get_client()

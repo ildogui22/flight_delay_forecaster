@@ -3,6 +3,8 @@ import os
 
 import boto3
 from dotenv import load_dotenv
+from botocore.config import Config
+
 
 load_dotenv()
 
@@ -13,6 +15,7 @@ def get_client():
         endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        config=Config(connect_timeout=5, retries={"max_attempts": 1})
     )
 
 def upload_json(data: dict | list, bucket: str, key: str):
