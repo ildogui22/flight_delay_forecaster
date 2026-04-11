@@ -1,0 +1,2 @@
+CREATE DATABASE mlpipeline;
+GRANT ALL PRIVILEGES ON DATABASE mlpipeline TO airflow;

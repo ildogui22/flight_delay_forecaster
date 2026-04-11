@@ -44,9 +44,12 @@ def ingest_weather(airport: str, start_date: str, end_date: str = None) -> None:
 if __name__ == "__main__":
     from datetime import timedelta
 
+    # START_DATE = "2024-01-01"
+    # END_DATE = "2024-03-31"
+    # AIRPORTS = ["EDDF", "EGLL", "LFPG", "EHAM"]
     START_DATE = "2024-01-01"
-    END_DATE = "2024-03-31"
-    AIRPORTS = ["EDDF", "EGLL", "LFPG", "EHAM"]
+    END_DATE = "2024-01-02"
+    AIRPORTS = ["EDDF"]
 
 
     start = datetime.strptime(START_DATE, "%Y-%m-%d")
@@ -62,8 +65,6 @@ if __name__ == "__main__":
             print(f"{current.strftime('%Y-%m-%d')} | {airport} — {count} flights")
             current += timedelta(days=1)
             time.sleep(1)
-
-
 
     # weather: one call per airport for the full range
     for airport in AIRPORTS:

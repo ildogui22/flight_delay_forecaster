@@ -36,9 +36,12 @@ def fetch_departures(
         flights = api.get_departures_by_airport(airport, begin, end)
 
     if flights is None:
+        print(f"  → API returned None for {airport} {start_date}")
         return []
     else:
+        print(f"  → API returned {len(flights)} flights for {airport} {start_date}")
         return [vars(f) for f in flights]
+
 
 
 # Testing the response of the flights API

@@ -36,3 +36,8 @@ dbt-test:
 
 dbt-debug:
 	cd dbt && dbt debug --profiles-dir .
+
+
+
+
+
