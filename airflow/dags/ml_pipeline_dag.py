@@ -18,20 +18,7 @@ from etl.silver_to_postgres import get_engine, ensure_schema, load_flights, load
 
 AIRPORTS = ["EDDF", "EGLL", "LFPG", "EHAM"]
 
-def run_ingest(**context):
-    date = "2024-01-15"
-    next_day = "2024-01-16"
-    for airport in AIRPORTS:
-        ingest_flights(airport, date, next_day)
-        ingest_weather(airport, date)
-
-def run_bronze_to_silver(**context):
-    date = "2024-01-15"
-    process_flights(date)
-    for airport in AIRPORTS:
-        process_weather(airport, date)
-
-
+DBT_DIR = "/opt/airflow/dbt"
 
 default_args = {
     "owner": "airflow",
@@ -40,52 +27,51 @@ default_args = {
 }
 
 def run_ingest(**context):
-    date = "2024-01-15"  # hardcoded for testing
-    next_day = "2024-01-16"
+    date = str(context["ds"])
+    next_day = str(context["tomorrow_ds"])
     for airport in AIRPORTS:
         ingest_flights(airport, date, next_day)
         ingest_weather(airport, date)
 
-
 def run_bronze_to_silver(**context):
-    # date = context["ds"]
-    date = "2024-01-15"  # hardcoded for testing
+    date = str(context["ds"])
     process_flights(date)
     for airport in AIRPORTS:
         process_weather(airport, date)
 
 def run_silver_to_postgres(**context):
+    date = str(context["ds"])
     engine = get_engine()
     ensure_schema(engine, "raw")
-    load_flights(engine)
-    load_weather(engine)
+    load_flights(engine, date)
+    load_weather(engine, date)
     engine.dispose()
 
-DBT_DIR = "/opt/airflow/dbt"
 
 with DAG(
-    dag_id = "ml_pipeline",
-    description = "Flight delay prediction pipeline",
-    schedule_interval = "@daily",
-    start_date = datetime(2024, 1, 1),
-    catchup = False,
-    default_args=default_args
-) as dag: 
-    
+    dag_id="ml_pipeline",
+    description="Flight delay prediction pipeline",
+    schedule_interval="@daily",
+    start_date=datetime(2026, 3, 1),
+    end_date=datetime(2026, 3, 31),
+    catchup=True,
+    default_args=default_args,
+) as dag:
+
     ingest = PythonOperator(
         task_id="ingest",
         python_callable=run_ingest,
-        execution_timeout=timedelta(minutes=3),
+        execution_timeout=timedelta(minutes=10),
     )
 
     bronze_to_silver = PythonOperator(
-        task_id = "bronze_to_silver",
-        python_callable = run_bronze_to_silver
+        task_id="bronze_to_silver",
+        python_callable=run_bronze_to_silver,
     )
 
     silver_to_postgres = PythonOperator(
-        task_id = "silver_to_postgres",
-        python_callable = run_silver_to_postgres
+        task_id="silver_to_postgres",
+        python_callable=run_silver_to_postgres,
     )
 
     dbt_run = BashOperator(

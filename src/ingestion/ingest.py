@@ -4,13 +4,13 @@ from external APIs and uploads raw JSON to S3 bronze storage.
 """
 
 import os
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 
 from ingestion.flights_api import fetch_departures
 from utils.s3 import ensure_bucket, upload_json
-
 from ingestion.weather_api import fetch_weather
 
 import time
@@ -42,30 +42,11 @@ def ingest_weather(airport: str, start_date: str, end_date: str = None) -> None:
 
 
 if __name__ == "__main__":
-    from datetime import timedelta
-
-    # START_DATE = "2024-01-01"
-    # END_DATE = "2024-03-31"
-    # AIRPORTS = ["EDDF", "EGLL", "LFPG", "EHAM"]
-    START_DATE = "2024-01-01"
-    END_DATE = "2024-01-02"
+    START_DATE = "2026-03-01"
+    END_DATE = "2026-03-02"
     AIRPORTS = ["EDDF"]
 
-    start = datetime.strptime(START_DATE, "%Y-%m-%d")
-    end = datetime.strptime(END_DATE, "%Y-%m-%d")
-
-    # flights: one day at a time (OpenSky API limit)
-    for airport in AIRPORTS:
-        current = start
-
-        while current <= end:
-            next_day = current + timedelta(days=1)
-            count = ingest_flights(airport, current.strftime("%Y-%m-%d"), next_day.strftime("%Y-%m-%d"))
-            print(f"{current.strftime('%Y-%m-%d')} | {airport} — {count} flights")
-            current += timedelta(days=1)
-            time.sleep(1)
-
-    # weather: one call per airport for the full range
-    for airport in AIRPORTS:
-        ingest_weather(airport, START_DATE, END_DATE)
-        print(f"Weather ingested for {airport}")
+    data = fetch_departures(AIRPORTS[0], START_DATE, END_DATE)
+    with open("sample_response.json", "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"Got {len(data)} flights, saved to sample_response.json")

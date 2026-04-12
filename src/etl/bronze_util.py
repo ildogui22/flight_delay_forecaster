@@ -33,9 +33,15 @@ def process_flights(date: str) -> None:
     frames = []
     for obj in response["Contents"]:
         body = s3.get_object(Bucket=BUCKET_RAW, Key=obj["Key"])["Body"].read()
-        frames.append(pd.DataFrame(json.loads(body)))
+        data = json.loads(body)
+        print(f"Keys in response: {type(data)}, length: {len(data)}")
+        frames.append(pd.DataFrame(data))
+
 
     df = pd.concat(frames, ignore_index=True)
+    if df.empty or "icao24" not in df.columns:
+        print(f"No flight data for {date}, skipping")
+        return
     df = df.dropna(subset=["icao24", "firstSeen", "lastSeen", "estDepartureAirport"])
     df = df.drop_duplicates(subset=["icao24", "firstSeen"])
     df["firstSeen_ts"] = pd.to_datetime(df["firstSeen"], unit="s", utc=True)
@@ -43,11 +49,12 @@ def process_flights(date: str) -> None:
     df["duration_minutes"] = (df["lastSeen"] - df["firstSeen"]) / 60
     df["year"] = int(dt.year)
     df["month"] = int(dt.month)
+    df["day"] = int(dt.day)
 
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=False)
 
-    out_key = f"flights/year={dt.year}/month={dt.month}/flights.parquet"
+    out_key = f"flights/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/flights.parquet"
     s3.put_object(Bucket=BUCKET_SILVER, Key=out_key, Body=buffer.getvalue())
     print(f"Flights written to s3://{BUCKET_SILVER}/{out_key} — {len(df)} rows")
 
@@ -68,6 +75,7 @@ def process_weather(airport: str, date: str) -> None:
     df["airport"] = airport
     df["year"] = int(dt.year)
     df["month"] = int(dt.month)
+    df["day"] = int(dt.day)
     df = df.drop(columns=["time"])
 
     buffer = io.BytesIO()
