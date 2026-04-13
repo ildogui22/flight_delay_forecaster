@@ -1,76 +1,29 @@
 import io
-import json
 import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pandas as pd
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 
 from utils.s3 import get_client
-
-from datetime import datetime
+from utils.db import get_engine, ensure_schema
 
 load_dotenv()
 
 BUCKET_SILVER = os.getenv("S3_BUCKET_SILVER", "ml-pipeline-silver")
 
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "mlpipeline")
-POSTGRES_USER = os.getenv("POSTGRES_USER", "mlpipeline")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "mlpipeline")
 
-
-def get_engine():
-    url = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    return create_engine(url)
-
-
-def ensure_schema(engine, schema: str) -> None:
-    try:
-        with engine.begin() as conn:
-            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
-    except IntegrityError:
-        pass
-
-
-def drop_table_cascade(engine, schema: str, table: str):
-    with engine.begin() as conn:
-        conn.execute(text(f"DROP TABLE IF EXISTS {schema}.{table} CASCADE"))
-
-
-def load_flights(engine, date: str) -> None:
+def load_air_quality(date: str) -> None:
+    from datetime import datetime
     dt = datetime.strptime(date, "%Y-%m-%d")
-    s3 = get_client()
-    prefix = f"flights/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/"
-    response = s3.list_objects_v2(Bucket=BUCKET_SILVER, Prefix=prefix)
-    if "Contents" not in response:
-        print("No silver flights found")
-        return
+    prefix = f"air_quality/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/"
 
-    frames = []
-    for obj in response["Contents"]:
-        body = s3.get_object(Bucket=BUCKET_SILVER, Key=obj["Key"])["Body"].read()
-        frames.append(pd.read_parquet(io.BytesIO(body)))
-    
-    df = pd.concat(frames, ignore_index=True)
-    # drop_table_cascade(engine, "raw", "flights")
-    with engine.begin() as conn:
-        try:
-            conn.execute(text(f"DELETE FROM raw.flights WHERE year={dt.year} AND month={dt.month} AND day={dt.day}"))
-        except:
-            pass
-    df.to_sql("flights", engine, schema="raw", if_exists="append", index=False)
-    print(f"Loaded {len(df)} flights rows into raw.flights")
-
-def load_weather(engine, date: str) -> None:
-    dt = datetime.strptime(date, "%Y-%m-%d")
-    prefix = f"weather/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/"
     s3 = get_client()
     response = s3.list_objects_v2(Bucket=BUCKET_SILVER, Prefix=prefix)
     if "Contents" not in response:
-        print("No silver weather files found")
+        print(f"No silver air quality files found for {date}")
         return
 
     frames = []
@@ -79,22 +32,47 @@ def load_weather(engine, date: str) -> None:
         frames.append(pd.read_parquet(io.BytesIO(body)))
 
     df = pd.concat(frames, ignore_index=True)
-    # drop_table_cascade(engine, "raw", "weather")
-    with engine.begin() as conn:
-        try:
-            conn.execute(text(f"DELETE FROM raw.weather WHERE year={dt.year} AND month={dt.month} AND day={dt.day}"))
-        except:
-            pass
-    df.to_sql("weather", engine, schema="raw", if_exists="append", index=False)
-    print(f"Loaded {len(df)} weather rows into raw.weather")
-
-
-if __name__ == "__main__":
-    date = "2024-01-01"
     engine = get_engine()
-    ensure_schema(engine, "raw")
-    load_flights(engine, date)
-    load_weather(engine, date)
+    with engine.begin() as conn:
+        for city in df["city"].unique():
+            conn.execute(
+                text("DELETE FROM raw.air_quality WHERE city = :city AND date = :date"),
+                {"city": city, "date": date}
+            )
+        df.to_sql("air_quality", conn, schema="raw", if_exists="append", index=False)
+    print(f"Loaded {len(df)} air quality rows into raw.air_quality")
     engine.dispose()
 
 
+def load_weather(city: str, date: str) -> None:
+    from datetime import datetime
+    dt = datetime.strptime(date, "%Y-%m-%d")
+    key = f"weather/year={dt.year}/month={dt.month:02d}/day={dt.day:02d}/{city}.parquet"
+
+    s3 = get_client()
+    body = s3.get_object(Bucket=BUCKET_SILVER, Key=key)["Body"].read()
+    df = pd.read_parquet(io.BytesIO(body))
+
+    df["date"] = df["timestamp"].dt.date
+    df = df.drop(columns=["timestamp"]).groupby(["date", "city"]).mean().reset_index()
+
+    engine = get_engine()
+    with engine.begin() as conn:
+        conn.execute(
+            text("DELETE FROM raw.weather WHERE city = :city AND date = :date"),
+            {"city": city, "date": date}
+        )
+        df.to_sql("weather", conn, schema="raw", if_exists="append", index=False)
+    print(f"Loaded {len(df)} weather rows for {city} into raw.weather")
+    engine.dispose()
+
+
+
+if __name__ == "__main__":
+    from config import CITIES
+    DATE = "2026-04-13"
+
+    ensure_schema(get_engine(), "raw")
+    load_air_quality(DATE)
+    for city in CITIES:
+        load_weather(city, DATE)

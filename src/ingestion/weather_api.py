@@ -1,8 +1,10 @@
 import requests
-import airportsdata
 import os
+from dotenv import load_dotenv
 
-BASE_URL = "https://archive-api.open-meteo.com/v1/archive"
+load_dotenv()
+
+WEATHER_URL = os.getenv("WEATHER_URL")
 
 DEFAULT_VARIABLES = [
     "temperature_2m",
@@ -18,19 +20,9 @@ DEFAULT_VARIABLES = [
     "weather_code",
 ]
 
-
-def get_airport_coords(icao: str) -> tuple[float, float] | None:
-    """
-    Get airport coordinates using icao codes from airportsdata library
-    """
-    airports = airportsdata.load("ICAO")
-    airport = airports.get(icao)
-    if airport is None:
-        return None
-    return (airport["lat"], airport["lon"])
-
 def fetch_weather(
-        airport: str,
+        latitude: str,
+        longitude: str,
         start_date: str,
         end_date: str,
         variables: list = DEFAULT_VARIABLES
@@ -38,12 +30,6 @@ def fetch_weather(
     """
     Fetching weather conditions (specified variables) from OpenMeteo API
     """
-
-    coords = get_airport_coords(airport)
-    if coords is None:
-        print(f"No coordinates found for airport: {airport}, skipping")
-        return {}
-    latitude, longitude = coords
 
     params = {
         "latitude": latitude,
@@ -54,7 +40,7 @@ def fetch_weather(
         "timezone": "UTC",
     }
 
-    response = requests.get(BASE_URL, params=params, timeout=30)
+    response = requests.get(WEATHER_URL, params=params, timeout=30)
     response.raise_for_status()
 
     return response.json()
@@ -65,7 +51,6 @@ if __name__ == "__main__":
     import json
 
     data = fetch_weather(
-        airport="EDDF",
         start_date="2024-01-01",
         end_date="2024-01-03",
     )
