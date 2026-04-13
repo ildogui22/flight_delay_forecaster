@@ -19,9 +19,9 @@ load_dotenv()
 
 CITIES = {
     # "Berlin":    (52.52, 13.40),
-    # "London":    (51.51, -0.13),
-    "Paris":     (48.86,  2.35),
-    "Amsterdam": (52.37,  4.90),
+    "London":    (51.51, -0.13),
+    # "Paris":     (48.86,  2.35),
+    # "Amsterdam": (52.37,  4.90),
 }
 
 def get_date_range(engine, city: str) -> tuple[str, str]:
@@ -40,8 +40,10 @@ def load_weather(engine, city: str) -> None:
     df["city"] = city
     df = df.drop(columns=["time"]).groupby(["date", "city"]).mean().reset_index()
     with engine.begin() as conn:
+        conn.execute(text("DELETE FROM raw.weather WHERE city = :city"), {"city": city})
         df.to_sql("weather", conn, schema="raw", if_exists="append", index=False)
     print(f"{city}: loaded {len(df)} rows ({start} → {end})")
+
 
 
 

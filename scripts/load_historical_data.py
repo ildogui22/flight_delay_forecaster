@@ -11,6 +11,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from utils.db import get_engine, ensure_schema
 
+from sqlalchemy import text
+
 load_dotenv()
 
 CSV_FILES = {
@@ -31,8 +33,10 @@ def load_csv(engine, city: str, path: str) -> None:
     df["city"] = city
     df = df[COLUMNS]
     with engine.begin() as conn:
+        conn.execute(text("DELETE FROM raw.air_quality WHERE city = :city"), {"city": city})
         df.to_sql("air_quality", conn, schema="raw", if_exists="append", index=False)
     print(f"{city}: loaded {len(df)} rows")
+
 
 
 if __name__ == "__main__":

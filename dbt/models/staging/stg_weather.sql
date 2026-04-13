@@ -4,8 +4,8 @@ with source as (
 
 renamed as (
     select
-        airport,
-        timestamp               as observed_at,
+        city,
+        date,
         temperature_2m          as temperature_c,
         relative_humidity_2m    as humidity_pct,
         wind_speed_10m          as wind_speed_kmh,
@@ -16,12 +16,10 @@ renamed as (
         snow_depth              as snow_depth_m,
         cloud_cover             as cloud_cover_pct,
         surface_pressure        as surface_pressure_hpa,
-        weather_code,
-        year,
-        month
+        weather_code
     from source
-    where airport is not null
-      and timestamp is not null
+    where city is not null
+      and date is not null
 )
 
 select * from renamed
