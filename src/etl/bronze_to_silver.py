@@ -1,24 +1,25 @@
 import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from dotenv import load_dotenv
 from utils.s3 import get_client
-import json
 
 load_dotenv()
 
 BUCKET_RAW = os.getenv("S3_BUCKET_RAW", "ml-pipeline-raw")
-ENGINE = os.getenv("PROCESSING_ENGINE", "pandas")
 
 
-def list_flight_dates(s3) -> list[str]:
-    response = s3.list_objects_v2(Bucket=BUCKET_RAW, Prefix="flights/")
+def list_dates(s3, prefix: str) -> list[str]:
+    response = s3.list_objects_v2(Bucket=BUCKET_RAW, Prefix=prefix)
     if "Contents" not in response:
         return []
     dates = set()
     for obj in response["Contents"]:
         parts = obj["Key"].split("/")
-        year = parts[1].split("=")[1]
+        year  = parts[1].split("=")[1]
         month = parts[2].split("=")[1]
-        day = parts[3].split("=")[1]
+        day   = parts[3].split("=")[1]
         dates.add(f"{year}-{month}-{day}")
     return sorted(dates)
 
@@ -30,32 +31,19 @@ def list_weather_files(s3) -> list[tuple[str, str]]:
     results = []
     for obj in response["Contents"]:
         parts = obj["Key"].split("/")
-        year = parts[1].split("=")[1]
+        year  = parts[1].split("=")[1]
         month = parts[2].split("=")[1]
-        day = parts[3].split("=")[1]
-        airport = parts[4].replace(".json", "")
-        results.append((airport, f"{year}-{month}-{day}"))
+        day   = parts[3].split("=")[1]
+        city  = parts[4].replace(".json", "")
+        results.append((city, f"{year}-{month}-{day}"))
     return results
 
 
-# if ENGINE == "spark":
-#     from etl.raw_to_silver_spark import build_spark_session, process_flights, process_weather
-
-#     s3 = get_client()
-#     spark = build_spark_session()
-#     for date in list_flight_dates(s3):
-#         process_flights(spark, date)
-#     for airport, date in list_weather_files(s3):
-#         process_weather(spark, airport, date)
-#     spark.stop()
-# else:
-
-
 if __name__ == "__main__":
-    from etl.bronze_util import process_flights, process_weather
+    from etl.bronze_util import process_air_quality, process_weather
 
     s3 = get_client()
-    for date in list_flight_dates(s3):
-        process_flights(date)
-    for airport, date in list_weather_files(s3):
-        process_weather(airport, date)
+    for date in list_dates(s3, "air_quality/"):
+        process_air_quality(date)
+    for city, date in list_weather_files(s3):
+        process_weather(city, date)
