@@ -31,11 +31,11 @@ def fetch_air_quality(city: str) -> dict:
     date = body["data"]["time"]["s"][:10]
 
     return {
-    "date":  date,
-    "city":  city,
-    "pm25":  iaqi.get("pm25", {}).get("v"),
-    "pm10":  iaqi.get("pm10", {}).get("v"),
-    "o3":    iaqi.get("o3",   {}).get("v"),
-    "no2":   iaqi.get("no2",  {}).get("v"),
-    "co":    iaqi.get("co",   {}).get("v"),
+    "date": date,
+    "city": city,
+    "pm25": iaqi.get("pm25", {}).get("v"),
+    "pm10": iaqi.get("pm10", {}).get("v"),
+    "o3": iaqi.get("o3", {}).get("v"),
+    "no2": iaqi.get("no2", {}).get("v"),
+    "co": iaqi.get("co", {}).get("v"),
 }
