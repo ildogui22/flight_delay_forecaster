@@ -18,7 +18,8 @@ FEATURE_COLS = (
     ]
 )
 
-TRAIN_END = "2022-12-31"
+TRAIN_END = "2021-12-31"
+VALIDATION_END = "2022-12-31"
 META_END = "2024-12-31"
 HORIZONS = list(range(1, 8))
 
@@ -67,14 +68,16 @@ def add_targets(df: pd.DataFrame, horizons: list[int] = HORIZONS) -> pd.DataFram
     return df.dropna(subset=[f"target_{h}d" for h in horizons])
 
 
-def split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
-    Chronological split into train / meta-train / test sets.
-    Train: up to TRAIN_END (2022)
-    Meta-train: TRAIN_END to META_END (2023-2024)
-    Test: after META_END (2025+)
+    Chronological split into train / val / meta-train / test sets.
+    Train: up to TRAIN_END (≤ 2021)
+    Validation: TRAIN_END – VAL_END (2022) <- XGBoost hyperparameter tuning
+    Meta-train: VAL_END – META_END (2023–2024) <- meta-model training
+    Test: after META_END (2025+) <- final evaluation
     """
     train = df[df["date"] <= TRAIN_END]
-    meta_train = df[(df["date"] > TRAIN_END) & (df["date"] <= META_END)]
+    validation = df[(df["date"] > TRAIN_END) & (df["date"] <= VALIDATION_END)]
+    meta_train = df[(df["date"] > VALIDATION_END) & (df["date"] <= META_END)]
     test = df[df["date"] > META_END]
-    return train, meta_train, test
+    return train, validation, meta_train, test

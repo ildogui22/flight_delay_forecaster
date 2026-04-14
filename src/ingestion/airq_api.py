@@ -1,9 +1,11 @@
 import os
 import requests
 from dotenv import load_dotenv
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
-from config import CITIES
 
+from src.config import CITIES
 
 load_dotenv()
 
@@ -39,3 +41,15 @@ def fetch_air_quality(city: str) -> dict:
     "no2": iaqi.get("no2", {}).get("v"),
     "co": iaqi.get("co", {}).get("v"),
 }
+
+if __name__ == "__main__":
+    import json
+    import sys
+    sys.path.insert(0, "../..")
+
+    raw = fetch_air_quality("Berlin")
+    with open(str(os.path.join(os.path.dirname(__file__), "berlin_aq_sample.json")), "w") as f:
+        json.dump(raw, f, indent=2)
+    print("Saved to berlin_aq_sample.json")
+
+

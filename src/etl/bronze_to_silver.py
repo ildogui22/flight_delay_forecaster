@@ -17,9 +17,9 @@ def list_dates(s3, prefix: str) -> list[str]:
     dates = set()
     for obj in response["Contents"]:
         parts = obj["Key"].split("/")
-        year  = parts[1].split("=")[1]
+        year = parts[1].split("=")[1]
         month = parts[2].split("=")[1]
-        day   = parts[3].split("=")[1]
+        day = parts[3].split("=")[1]
         dates.add(f"{year}-{month}-{day}")
     return sorted(dates)
 
@@ -31,10 +31,10 @@ def list_weather_files(s3) -> list[tuple[str, str]]:
     results = []
     for obj in response["Contents"]:
         parts = obj["Key"].split("/")
-        year  = parts[1].split("=")[1]
+        year = parts[1].split("=")[1]
         month = parts[2].split("=")[1]
-        day   = parts[3].split("=")[1]
-        city  = parts[4].replace(".json", "")
+        day = parts[3].split("=")[1]
+        city = parts[4].replace(".json", "")
         results.append((city, f"{year}-{month}-{day}"))
     return results
 

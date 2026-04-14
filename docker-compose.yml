@@ -61,6 +61,7 @@ services:
       POSTGRES_PASSWORD: mlpipeline
       OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID}
       OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
     ports:
       - "8080:8080"
     volumes:
@@ -96,6 +97,7 @@ services:
       POSTGRES_PASSWORD: mlpipeline
       OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID}
       OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
 
     volumes:
       - ./airflow/dags:/opt/airflow/dags
@@ -123,6 +125,26 @@ services:
       bash -c "airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
 
     restart: "no"
+  
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.0.0
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    command: >
+      mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri postgresql://mlpipeline:mlpipeline@postgres-pipeline/mlpipeline
+        --default-artifact-root s3://ml-pipeline-mlflow/
+    depends_on:
+      - postgres-pipeline
+      - minio
+    networks:
+      - ml-network
 
 volumes:
   postgres-airflow-data:
