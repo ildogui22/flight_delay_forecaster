@@ -1,5 +1,6 @@
 # ── Secrets ───────────────────────────────────────────
 .env
+.env.example
 
 # ── Python ────────────────────────────────────────────
 __pycache__/
@@ -30,3 +31,5 @@ etl/raw_to_silver_spark.py
 *.ipynb
 
 *.csv
+
+PLAN.md
