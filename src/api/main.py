@@ -24,12 +24,14 @@ def get_forecast(city: str):
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(text("""
-                                 SELECT city, forecast_date, target_date, horizon, predicted, actual
-                                 FROM raw.predictions
-                                 WHERE LOWER(city := city
-                                 ORDER BY forecast_date DESC, horizon ASC
-                                 LIMIT 7
-                                 """), {"city": city}).mappings().all()
+            SELECT city, forecast_date, target_date, horizon, predicted, actual
+            FROM raw.predictions
+            WHERE LOWER(city) = :city
+            ORDER BY forecast_date DESC, horizon ASC
+            LIMIT 7
+        """), {"city": city}).mappings().all()
+    engine.dispose()
+
     if not rows:
         raise HTTPException(status_code=404, detail=f"No forecast found for {city}")
     return [ForecastPoint(**r) for r in rows]

@@ -10,7 +10,7 @@ class ForecastPoint(BaseModel):
     actual: float | None
 
 class HistoryPoint(BaseModel):
-    date: str
+    date: date
     city: str
     pm10: float | None
 

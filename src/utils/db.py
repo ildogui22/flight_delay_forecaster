@@ -11,6 +11,8 @@ POSTGRES_DB = os.getenv("POSTGRES_DB", "mlpipeline")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "mlpipeline")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "mlpipeline")
 
+SUPABASE_DB_PASSWORD=os.getenv("SUPABASE_DB_PASSWORD")
+
 def get_engine():
     url = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     return create_engine(url)

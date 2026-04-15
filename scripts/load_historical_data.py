@@ -33,7 +33,10 @@ def load_csv(engine, city: str, path: str) -> None:
     df["city"] = city
     df = df[COLUMNS]
     with engine.begin() as conn:
-        conn.execute(text("DELETE FROM raw.air_quality WHERE city = :city"), {"city": city})
+        try:
+            conn.execute(text("DELETE FROM raw.air_quality WHERE city = :city"), {"city": city})
+        except:
+            pass
         df.to_sql("air_quality", conn, schema="raw", if_exists="append", index=False)
     print(f"{city}: loaded {len(df)} rows")
 
