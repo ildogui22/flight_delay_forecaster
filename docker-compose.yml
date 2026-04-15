@@ -69,7 +69,6 @@ services:
       - ./src:/opt/airflow/src
       - ./dbt:/opt/airflow/dbt
       - airflow-logs:/opt/airflow/logs
-
     depends_on:
       - postgres-airflow
     networks:
@@ -134,12 +133,7 @@ services:
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: minioadmin
       AWS_SECRET_ACCESS_KEY: minioadmin
-    command: >
-      mlflow server
-        --host 0.0.0.0
-        --port 5000
-        --backend-store-uri postgresql://mlpipeline:mlpipeline@postgres-pipeline/mlpipeline
-        --default-artifact-root s3://ml-pipeline-mlflow/
+    command: bash -c "pip install psycopg2-binary boto3 --quiet && mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://mlpipeline:mlpipeline@postgres-pipeline/mlpipeline --default-artifact-root s3://ml-pipeline-mlflow/"
     depends_on:
       - postgres-pipeline
       - minio

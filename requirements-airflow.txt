@@ -1,4 +1,3 @@
-git+https://github.com/openskynetwork/opensky-api.git#subdirectory=python
 boto3
 pandas
 pyarrow
@@ -6,6 +5,9 @@ python-dotenv
 requests
 sqlalchemy
 psycopg2-binary
-dbt-core
-dbt-postgres==1.7.19
-airportsdata
+xgboost
+lightgbm
+prophet
+optuna
+mlflow
+scikit-learn
