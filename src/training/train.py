@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import mlflow
 import mlflow.sklearn
+import mlflow.pyfunc
 import numpy as np
 import optuna
 import pandas as pd
@@ -64,7 +65,6 @@ def tune_xgb(X_train, y_train, X_val, y_val) -> dict:
         return -np.sqrt(mean_squared_error(y_val, y_pred))
 
     study = optuna.create_study(direction="maximize")
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
     study.optimize(objective, n_trials=N_TRIALS)
     return study.best_params
 
@@ -127,17 +127,62 @@ def train_city_horizon(df: pd.DataFrame, horizon: int):
 
     return xgb_model, prophet_model, meta_model, best_params, metrics
 
+def promote_if_best(client, model_name: str, run_id: str, rmse: float):
+    """Promote the just-registered model version to Production if it has the best RMSE."""
+    # get the version we just registered
+    versions = client.get_latest_versions(model_name, stages=["None"])
+    if not versions:
+        return
+    new_version = versions[0].version
+
+    # check if there's already a Production model
+    prod_versions = client.get_latest_versions(model_name, stages=["Production"])
+    if prod_versions:
+        prod_run_id = prod_versions[0].run_id
+        prod_rmse = client.get_run(prod_run_id).data.metrics["rmse"]
+        if rmse >= prod_rmse:
+            print(f"keeping existing Production")
+            return
+
+    client.transition_model_version_stage(
+        name=model_name,
+        version=new_version,
+        stage="Production",
+        archive_existing_versions=True,
+    )
+    print(f"-> promoted version {new_version} to Production (RMSE {rmse:.2f})")
+
+class StackedPM10Model(mlflow.pyfunc.PythonModel):
+    def __init__(self, xgb_model, prophet_model, meta_model, horizon):
+        self.xgb_model = xgb_model
+        self.prophet_model = prophet_model
+        self.meta_model = meta_model
+        self.horizon = horizon
+
+    def predict(self, context, model_input):
+        # model_input: DataFrame with FEATURE_COLS + 'date'
+        X = model_input[FEATURE_COLS].values
+        dates = pd.to_datetime(model_input["date"]) + pd.Timedelta(days=self.horizon)
+
+        xgb_pred = self.xgb_model.predict(X)
+        prophet_pred = prophet_predict(self.prophet_model, dates)
+
+        meta_X = np.column_stack([xgb_pred, prophet_pred])
+        return self.meta_model.predict(meta_X)
+
+
 
 def run():
     mlflow.set_tracking_uri(MLFLOW_URI)
     mlflow.set_experiment(EXPERIMENT)
+    client = mlflow.tracking.MlflowClient()
 
     city_dfs = build_dataset()
 
     for city in CITIES:
         df = city_dfs[city]
         for h in HORIZONS:
-            with mlflow.start_run(run_name=f"{city}_horizon_{h}d"):
+            with mlflow.start_run(run_name=f"{city}_horizon_{h}d") as active_run:
                 mlflow.set_tag("city", city)
                 mlflow.set_tag("horizon", f"{h}d")
 
@@ -148,13 +193,18 @@ def run():
                 mlflow.log_params(best_params)
                 mlflow.log_metrics(metrics)
 
-                mlflow.sklearn.log_model(
-                    meta_model,
-                    artifact_path="meta_model",
-                    registered_model_name=f"pm10_{city.lower()}_{h}d",
+                model_name = f"pm10_{city.lower()}_{h}d"
+                stacked = StackedPM10Model(xgb_model, prophet_model, meta_model, h)
+                mlflow.pyfunc.log_model(
+                    artifact_path="stacked_model",
+                    python_model=stacked,
+                    registered_model_name=model_name,
                 )
 
+
+                promote_if_best(client, model_name, active_run.info.run_id, metrics["rmse"])
                 print(f"{city} +{h}d — RMSE: {metrics['rmse']:.2f}  MAE: {metrics['mae']:.2f}  R²: {metrics['r2']:.3f}")
+
 
 
 if __name__ == "__main__":

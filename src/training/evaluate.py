@@ -8,8 +8,8 @@ def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
     """RMSE, MAE, R² for a single horizon."""
     return {
         "rmse": np.sqrt(mean_squared_error(y_true, y_pred)),
-        "mae":  mean_absolute_error(y_true, y_pred),
-        "r2":   r2_score(y_true, y_pred),
+        "mae": mean_absolute_error(y_true, y_pred),
+        "r2": r2_score(y_true, y_pred),
     }
 
 

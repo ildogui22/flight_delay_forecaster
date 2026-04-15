@@ -21,3 +21,17 @@ def ensure_schema(engine, schema: str) -> None:
             conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
     except IntegrityError:
         pass
+
+def ensure_predictions_table(engine) -> None:
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS raw.predictions (
+                city          VARCHAR NOT NULL,
+                forecast_date DATE NOT NULL,
+                target_date   DATE NOT NULL,
+                horizon       INT NOT NULL,
+                predicted     FLOAT NOT NULL,
+                actual        FLOAT,
+                UNIQUE (city, forecast_date, horizon)
+            )
+        """))

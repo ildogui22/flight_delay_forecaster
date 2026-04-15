@@ -26,17 +26,15 @@ HORIZONS = list(range(1, 8))
 
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Add lag, seasonality and interaction features to the merged dataframe.
-    Must be called after merge(), on the full dataset before splitting.
+    Add lag, seasonality and interaction features to the merged dataframe
+    Must be called after merge(), on the full dataset before splitting
     """
     df = df.copy()
 
     # lag features — computed per city so lags don't bleed across cities
     df["pm10_lag_1d"] = df.groupby("city")["pm10"].shift(1)
     df["pm10_lag_7d"] = df.groupby("city")["pm10"].shift(7)
-    df["pm10_rolling_7d"] = df.groupby("city")["pm10"].transform(
-        lambda x: x.shift(1).rolling(7).mean()
-    )
+    df["pm10_rolling_7d"] = df.groupby("city")["pm10"].transform(lambda x: x.shift(1).rolling(7).mean())
 
     # seasonality
     df["month"] = df["date"].dt.month
@@ -70,9 +68,9 @@ def add_targets(df: pd.DataFrame, horizons: list[int] = HORIZONS) -> pd.DataFram
 
 def split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
-    Chronological split into train / val / meta-train / test sets.
+    Chronological split into train / val / meta-train / test sets
     Train: up to TRAIN_END (≤ 2021)
-    Validation: TRAIN_END – VAL_END (2022) <- XGBoost hyperparameter tuning
+    Validation: TRAIN_END – VAL_END (2022) <- hyperparameter tuning
     Meta-train: VAL_END – META_END (2023–2024) <- meta-model training
     Test: after META_END (2025+) <- final evaluation
     """
