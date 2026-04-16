@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.mlflow/cache
-          key: mlflow-models-${{ hashFiles('src/config.py') }}
+          key: "mlflow-models-${{ hashFiles('src/config.py') }}"
 
       - name: Run pipeline
         env:
