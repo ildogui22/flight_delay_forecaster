@@ -20,7 +20,10 @@ load_dotenv()
 def get_last_date(engine, table: str) -> date:
     with engine.connect() as conn:
         result = conn.execute(text(f"SELECT MAX(date) FROM raw.{table}")).fetchone()
-    return result[0] if result[0] else date(2026, 1, 1)
+    value = result[0] if result[0] else date(2026, 1, 1)
+    if hasattr(value, "date"):
+        return value.date()
+    return value
 
 
 def date_range(start: date, end: date) -> list[str]:
