@@ -18,6 +18,12 @@ jobs:
       - name: Install dependencies
         run: pip install --no-cache-dir -r requirements-api.txt
 
+        - name: Cache MLflow models
+        uses: actions/cache@v4
+        with:
+            path: ~/.mlflow/cache
+            key: mlflow-models-${{ hashFiles('src/config.py') }}
+
       - name: Run pipeline
         env:
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}

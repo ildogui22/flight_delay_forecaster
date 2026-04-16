@@ -17,13 +17,16 @@ from training.predict import run_inference
 load_dotenv()
 
 
+from datetime import date, datetime, timedelta
+
 def get_last_date(engine, table: str) -> date:
     with engine.connect() as conn:
         result = conn.execute(text(f"SELECT MAX(date) FROM raw.{table}")).fetchone()
     value = result[0] if result[0] else date(2026, 1, 1)
-    if hasattr(value, "date"):
+    if isinstance(value, datetime):
         return value.date()
     return value
+
 
 
 def date_range(start: date, end: date) -> list[str]:
